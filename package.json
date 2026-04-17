@@ -1,6 +1,6 @@
 {
-	"name": "obsidian-note-annotations",
-	"version": "1.0.1",
+	"name": "permanent-ink",
+	"version": "1.0.0",
 	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
 	"main": "./build/main.js",
 	"scripts": {
