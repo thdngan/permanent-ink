@@ -25,10 +25,6 @@ export class OmnidianAnnotationsView extends ItemView {
 	private annotations: Annotation[] = [];
 	private associatedEditor: Editor | null = null;
 
-	constructor(leaf: WorkspaceLeaf) {
-		super(leaf);
-	}
-
 	getViewType() { return OMNIDIAN_ANNOTATIONS_VIEW_TYPE; }
 	getDisplayText() { return "Annotations"; }
 	getIcon() { return "message-square-quote"; }
@@ -141,7 +137,7 @@ export class OmnidianAnnotationsView extends ItemView {
 		const buildFullComment = (text: string, color: string | null): string => {
 			const trimmedText = text.trim();
 			const colorString = color ? ` @${color}` : "";
-			return (trimmedText ? `${trimmedText}${colorString}` : colorString).trim();
+			return (trimmedText ? `${trimmedText}${colorString}` : colorString);
 		};
 
 		const fullCommentText = buildFullComment(newComment, type === 'highlight' ? color : null);
@@ -151,19 +147,34 @@ export class OmnidianAnnotationsView extends ItemView {
 			? `${tag}${text}${tag}<!--${fullCommentText}-->`
 			: `${tag}${text}${tag}`;
 		
+		// Manually calculate offset changes to prevent race conditions on subsequent annotations
+		const originalLength = to - from;
+		const newLength = newAnnotation.length;
+		const offsetDelta = newLength - originalLength;
+
 		this.associatedEditor.replaceRange(
 			newAnnotation, 
 			this.associatedEditor.offsetToPos(from), 
 			this.associatedEditor.offsetToPos(to)
 		);
 		
-		// Find the annotation in the local state and update it.
-		const annotationIndex = this.annotations.findIndex(ann => ann.from === from);
-		if (annotationIndex !== -1) {
-			this.annotations[annotationIndex].comment = newComment;
-			// The 'to' offset will change because the comment length changes.
-			this.annotations[annotationIndex].to = from + newAnnotation.length;
-		}
+		// Immediately update the offsets of ALL annotations in the view state
+		this.annotations = this.annotations.map(ann => {
+			if (ann.from === from) {
+				return {
+					...ann,
+					comment: newComment,
+					to: from + newLength // Update the length of the current annotation
+				};
+			} else if (ann.from > from) {
+				return {
+					...ann,
+					from: ann.from + offsetDelta, // Shift subsequent annotations
+					to: ann.to + offsetDelta
+				};
+			}
+			return ann;
+		});
 
 		// Force an immediate re-render with the updated data.
 		this.render();
@@ -248,7 +259,6 @@ function AnnotationsListComponent({ annotations, onItemClick, onCommentUpdate, o
                             key={`${annotation.from}-${index}-edit`}
                             annotation={annotation}
                             onSave={(newComment) => handleSave(annotation, newComment)}
-                            onCancel={() => setEditingAnnotationFrom(null)}
                         />
                     );
                 } else {
@@ -258,7 +268,7 @@ function AnnotationsListComponent({ annotations, onItemClick, onCommentUpdate, o
 								<div className="annotation-card-header-content">
 									<span className="annotation-type-indicator" style={{ backgroundColor: annotation.type === 'highlight' ? annotation.color ?? 'var(--text-highlight-bg)' : 'var(--text-faint)' }}></span>
 									<span className="annotation-category">{annotation.type === 'highlight' ? 'Highlight:' : annotation.comment ? 'Replace:' : 'Delete:'}</span>
-									<span className="annotation-text-preview">"{annotation.text}"</span>
+									<span className="annotation-text-preview">&quot;{annotation.text}&quot;</span>
 								</div>
 								<RemoveButton onClick={(e) => {
 									e.stopPropagation();
@@ -296,10 +306,9 @@ function RemoveButton({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
 
 
 // React component for the inline editing UI in the sidebar
-function AnnotationEditComponent({ annotation, onSave, onCancel }: {
+function AnnotationEditComponent({ annotation, onSave }: {
     annotation: Annotation;
     onSave: (newComment: string) => void;
-    onCancel: () => void;
 }) {
     const [comment, setComment] = useState(annotation.comment);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -322,7 +331,7 @@ function AnnotationEditComponent({ annotation, onSave, onCancel }: {
             <div className="annotation-card-header">
 				<span className="annotation-type-indicator" style={{ backgroundColor: annotation.type === 'highlight' ? annotation.color ?? 'var(--text-highlight-bg)' : 'var(--text-faint)' }}></span>
 				<span className="annotation-category">{annotation.type === 'highlight' ? 'Highlight:' : 'Suggestion:'}</span>
-				<span className="annotation-text-preview">"{annotation.text}"</span>
+				<span className="annotation-text-preview">&quot;{annotation.text}&quot;</span>
             </div>
             <div className="annotation-edit-area">
                 <textarea 

@@ -28,15 +28,16 @@ export class OmnidianSettingTab extends PluginSettingTab {
 					})
 			);
 
+		const descFragment = document.createDocumentFragment();
+		descFragment.append("Add comma separated list of ");
+		const colorLink = document.createElement("a");
+		colorLink.href = "https://147colors.com";
+		colorLink.textContent = "color names";
+		descFragment.append(colorLink, ". Requires app reload.");
+
 		new Setting(containerEl)
 			.setName("Highlighting color options")
-			.setDesc(
-				document
-					.createRange()
-					.createContextualFragment(
-						"Add comma separated list of <a href='https://147colors.com'>color names</a>. Requires app reload."
-					)
-			)
+			.setDesc(descFragment) // Using the safe DOM fragment here
 			.setClass("[&_textarea]:w-full")
 			.addTextArea((toggle) =>
 				toggle

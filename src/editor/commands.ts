@@ -107,10 +107,11 @@ function processSelectionAndApplyMark(editor: Editor, expandSelection: boolean, 
 
             // Find the "gaps" of plain text between the existing annotations
             for (const match of matches) {
-                if (match.index! > lastIndex) {
-                    rangesToMark.push({ start: lastIndex, end: match.index! });
+                if (match.index === undefined) continue;
+                if (match.index > lastIndex) {
+                    rangesToMark.push({ start: lastIndex, end: match.index });
                 }
-                lastIndex = match.index! + match[0].length;
+                lastIndex = match.index + match[0].length;
             }
             if (lastIndex < textToProcess.length) {
                 rangesToMark.push({ start: lastIndex, end: textToProcess.length });

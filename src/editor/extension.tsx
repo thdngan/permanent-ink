@@ -123,8 +123,8 @@ function CombinedPopover({ anchorEl, type, initialComment, textToCopy, onSave, o
 	useEffect(() => {
 		const handleToggle = (e: ToggleEvent) => {
 			if (e.newState === 'closed' && !wasActionTaken.current) {
-				if ((commentText.includes("-->")) || (commentText.includes("<!--"))) {
-					new Notice("Comment cannot include '<!--' or '\-\->', changes discarded.");
+				if (commentText.includes("-->") || commentText.includes("<!--")) {
+					new Notice("Comment cannot include '<!--' or '-->', changes discarded.");
 					return;
 				}
 				const fullComment = buildFullComment(commentText, selectedColor);
@@ -315,7 +315,8 @@ function createDecorations(state: EditorState, colorOptions: string[]): Decorati
 	
 	const processMatches = (regex: RegExp, type: 'highlight' | 'strikethrough') => {
 		for (const match of state.doc.toString().matchAll(regex)) {
-			const from = match.index!;
+			if (match.index === undefined) continue;
+			const from = match.index;
 			const to = from + match[0].length;
 			const text = match[1];
 			const comment = match[2] || "";
@@ -335,7 +336,8 @@ function createDecorations(state: EditorState, colorOptions: string[]): Decorati
 	// This regex finds quad blocks that are used for indentation at the start of a line.
 	const quadRegex = /(^\s*)(\$\s*(?:\\quad\s*)+\$\s*)/gm;
 	for (const match of state.doc.toString().matchAll(quadRegex)) {
-		const from = match.index! + match[1].length;
+		if (match.index === undefined) continue;
+		const from = match.index + match[1].length;
 		const to = from + match[2].length;
 		decorations.push(
 			Decoration.replace({
@@ -373,7 +375,7 @@ export function highlightExtension(colorOptions: string[]): Extension {
 	const popoverPlugin = ViewPlugin.fromClass(class {
 		update(update: ViewUpdate) {
 			const findAndShow = (from: number, to: number, type?: 'highlight' | 'strikethrough') => {
-				update.state.field(decorationStateField).between(from, to, (dFrom, dTo, deco) => {
+				update.state.field(decorationStateField).between(from, to, (dFrom, _dTo, deco) => {
 					if (dFrom === from) {
 						const widget = deco.spec.widget as AnnotationWidget;
 						if (widget instanceof AnnotationWidget && (!type || widget['type'] === type)) {

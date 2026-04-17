@@ -97,60 +97,40 @@ export default class OmnidianPlugin extends Plugin {
 	 * Injects an invisible SVG element into the body, containing the filter
 	 * needed for the "gooey" blob effect in the color palette.
 	 */
-	// private injectGooeyFilter() {
-	// 	// Check if the filter already exists to avoid duplicates on plugin reload
-	// 	if (document.getElementById("perink-gooey-filter")) return;
-
-	// 	const svgGooey = `
-	// 		<svg id="perink-gooey-filter" style="display: none;" version="1.1" xmlns="http://www.w3.org/2000/svg">
-	// 			<defs>
-	// 				<filter id="goo">
-	// 					<feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-	// 					<feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
-	// 					<feBlend in="SourceGraphic" in2="goo" />
-	// 				</filter>
-	// 			</defs>
-	// 		</svg>
-	// 	`;
-	// 	document.body.insertAdjacentHTML('beforeend', svgGooey);
-	// }
-
 	private injectGooeyFilter() {
-    if (document.getElementById("perink-gooey-filter")) return;
+		if (document.getElementById("perink-gooey-filter")) return;
 
-    const ns = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(ns, "svg");
-    svg.id = "perink-gooey-filter";
-    svg.style.display = "none";
-    svg.setAttribute("version", "1.1");
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.id = "perink-gooey-filter";
+		svg.style.display = "none";
+		svg.setAttribute("version", "1.1");
 
-    const defs = document.createElementNS(ns, "defs");
-    const filter = document.createElementNS(ns, "filter");
-    filter.id = "goo";
+		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+		const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+		filter.id = "goo";
 
-    const blur = document.createElementNS(ns, "feGaussianBlur");
-    blur.setAttribute("in", "SourceGraphic");
-    blur.setAttribute("stdDeviation", "10");
-    blur.setAttribute("result", "blur");
+		const feGaussianBlur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+		feGaussianBlur.setAttribute("in", "SourceGraphic");
+		feGaussianBlur.setAttribute("stdDeviation", "10");
+		feGaussianBlur.setAttribute("result", "blur");
 
-    const colorMatrix = document.createElementNS(ns, "feColorMatrix");
-    colorMatrix.setAttribute("in", "blur");
-    colorMatrix.setAttribute("mode", "matrix");
-    colorMatrix.setAttribute("values", "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7");
-    colorMatrix.setAttribute("result", "goo");
+		const feColorMatrix = document.createElementNS("http://www.w3.org/2000/svg", "feColorMatrix");
+		feColorMatrix.setAttribute("in", "blur");
+		feColorMatrix.setAttribute("mode", "matrix");
+		feColorMatrix.setAttribute("values", "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7");
+		feColorMatrix.setAttribute("result", "goo");
 
-    const blend = document.createElementNS(ns, "feBlend");
-    blend.setAttribute("in", "SourceGraphic");
-    blend.setAttribute("in2", "goo");
+		const feBlend = document.createElementNS("http://www.w3.org/2000/svg", "feBlend");
+		feBlend.setAttribute("in", "SourceGraphic");
+		feBlend.setAttribute("in2", "goo");
 
-    filter.appendChild(blur);
-    filter.appendChild(colorMatrix);
-    filter.appendChild(blend);
-    defs.appendChild(filter);
-    svg.appendChild(defs);
+		filter.append(feGaussianBlur, feColorMatrix, feBlend);
+		defs.appendChild(filter);
+		svg.appendChild(defs);
 
-    document.body.appendChild(svg);
+		document.body.appendChild(svg);
 	}
+
 
 	// --- Event Handlers ---
 
@@ -992,12 +972,11 @@ export default class OmnidianPlugin extends Plugin {
 			
 			leaves.forEach(leaf => (leaf.view as OmnidianAnnotationsView).setData(annotations, editor));
 		} else {
-			// A markdown editor is NOT active. We need to be careful here.
-			const activeLeaf = this.app.workspace.activeLeaf;
-	
-			// If the newly active leaf is our own annotations view, DO NOTHING.
-			// This prevents the view from clearing itself when it gains focus.
-			if (activeLeaf && activeLeaf.getViewState().type === OMNIDIAN_ANNOTATIONS_VIEW_TYPE) {
+			// A markdown editor is NOT active. Check if our custom view is active.
+			const activeAnnotationsView = this.app.workspace.getActiveViewOfType(OmnidianAnnotationsView);
+			
+			// If our own annotations view is active, DO NOTHING.
+			if (activeAnnotationsView) {
 				return;
 			}
 	
@@ -1042,7 +1021,6 @@ export default class OmnidianPlugin extends Plugin {
 		cleanup();
 		this.statusBarItemEl?.remove();
 		this.removeSelectionPopup();
-		// this.app.workspace.detachLeavesOfType(OMNIDIAN_ANNOTATIONS_VIEW_TYPE);
 	}
 
 	async loadSettings() {
