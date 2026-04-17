@@ -1,0 +1,49 @@
+{
+	"name": "obsidian-note-annotations",
+	"version": "1.0.1",
+	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"main": "./build/main.js",
+	"scripts": {
+		"dev": "conc 'bun dev:css -- --watch' 'bun build ./src/main.ts --outdir=./sandbox/.obsidian/plugins/plugin --format=cjs --external=obsidian --external=electron --external=@codemirror/* --external=@lezer/* --sourcemap=inline --loader .json=file --asset-naming \"[name].[ext]\" --watch'",
+		"dev:css": "tailwindcss -i ./src/styles.css -o ./sandbox/.obsidian/plugins/plugin/styles.css",
+		"build": "conc 'bun ts:check' 'bun lint -- --quiet' && conc 'bun build:css' 'bun ./scripts/build.ts production'",
+		"build:css": "tailwindcss -i ./src/styles.css -o ./build/styles.css",
+		"ts:check": "tsc -noEmit -skipLibCheck",
+		"lint": "eslint ./src",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"@eslint/js": "^9.14.0",
+		"@types/bun": "^1.1.13",
+		"@types/node": "^22.8.6",
+		"@types/react": "^18.3.12",
+		"@types/react-dom": "^18.3.1",
+		"@types/react-resizable": "^3.0.8",
+		"builtin-modules": "3.3.0",
+		"clsx": "^2.1.1",
+		"concurrently": "^9.2.0",
+		"esbuild": "^0.24.0",
+		"eslint": "^9.14.0",
+		"eslint-plugin-react": "^7.37.2",
+		"eslint-plugin-tailwindcss": "^3.17.5",
+		"globals": "^15.12.0",
+		"obsidian": "latest",
+		"prettier": "^3.3.3",
+		"prettier-plugin-tailwindcss": "^0.6.8",
+		"tailwind-merge": "^2.5.4",
+		"tailwindcss": "^3.4.14",
+		"tslib": "^2.8.1",
+		"typescript": "^5.6.3",
+		"typescript-eslint": "^8.13.0"
+	},
+	"dependencies": {
+		"caniuse-lite": "^1.0.30001727",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"react-draggable": "^4.5.0",
+		"react-resizable": "^3.0.5"
+	}
+}

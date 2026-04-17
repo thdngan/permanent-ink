@@ -1,0 +1,214 @@
+@import 'react-resizable/css/styles.css';
+
+/* --- Status Bar --- */
+.status-bar-item.is-active,
+.status-bar-item.is-inactive {
+	cursor: pointer;
+}
+.status-bar-item.is-active { color: var(--color-green); }
+.status-bar-item.is-inactive { color: var(--color-red); opacity: 0.75; }
+
+@tailwind components;
+@tailwind utilities;
+
+/* --- Editor Focus Indicator (for sidebar clicks) --- */
+.perink-focus-indicator {
+    position: absolute;
+    z-index: var(--layer-selection); /* Renders below text selection */
+    pointer-events: none;
+    /* border: 2px solid var(--interactive-accent); */
+    border: 3px solid #ff3355;
+    /* border: none; */
+    border-radius: var(--radius-l);
+    /* box-shadow: 0 0 10px #ff3355, 0 0 5px white; Adds an outer glow */
+    opacity: 1;
+    animation: perink-fade-out 2s ease-out forwards;
+}
+
+@keyframes perink-fade-out {
+    0% { opacity: 1; transform: scale(1.0); }
+    75% { opacity: 1; transform: scale(1.02); } /* Stays opaque for longer and adds a subtle pulse */
+    100% { opacity: 0; transform: scale(1.05); }
+}
+
+/* --- Unified Popover (for editor clicks) --- */
+#perink-unified-popover-container {
+	border: none;
+	background: transparent;
+	overflow: visible;
+	inset: unset;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+	z-index: var(--layer-popover);
+}
+.perink-popover-wrapper,
+.perink-palette-wrapper {
+	pointer-events: auto;
+}
+.perink-popover-drag-handle { cursor: move; }
+.react-resizable-handle { background: none; }
+.react-resizable-handle-se {
+    width: 20px; height: 20px; bottom: 0; right: 0; cursor: se-resize;
+}
+.react-resizable-handle-se::after {
+    content: ''; position: absolute; right: 3px; bottom: 3px; width: 5px;
+    height: 5px; border-right: 2px solid var(--text-faint); border-bottom: 2px solid var(--text-faint);
+}
+.perink-popover {
+    background-color: var(--background-secondary) !important;
+	border: 1px solid var(--background-modifier-border);
+}
+
+/* --- Color Palette in Popover --- */
+.perink-palette-container {
+    background-color: var(--background-secondary);
+    border-radius: 12px; padding: 6px 4px;
+    border: 1px solid var(--background-modifier-border);
+	box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+.perink-color-blob {
+    width: 1.75rem; height: 1.75rem; border-radius: 50%; cursor: pointer;
+    margin: 0 3px; background-color: var(--blob-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.perink-color-blob:hover {
+    transform: scale(1.15); box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+/* --- LIVE PREVIEW WIDGET STYLES --- */
+
+.is-live-preview .perink-strikethrough,
+.is-live-preview .perink-highlight {
+	cursor: context-menu;
+	padding: 0 !important; display: inline; height: auto; border: 0;
+	user-select: none; box-shadow: none; font-family: var(--font-text);
+	font-size: var(--font-text-size); border-radius: 0;
+}
+.is-live-preview .perink-strikethrough { text-decoration: none; }
+.is-live-preview .perink-highlight { background-color: var(--text-highlight-bg); }
+.is-live-preview .perink-highlight.has-comment {
+	text-decoration-line: underline; text-decoration-style: dashed;
+	text-decoration-color: var(--color-gray); text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
+}
+.is-live-preview .perink-strikethrough > span {
+	text-decoration: line-through; text-decoration-thickness: 1px;
+	text-decoration-color: rgba(var(--text-normal), .7)
+}
+.is-live-preview .perink-strikethrough.has-comment {
+	text-decoration-line: underline; text-decoration-style: dashed;
+	text-decoration-color: var(--color-gray); text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
+}
+.is-live-preview .perink-strikethrough:hover,
+.is-live-preview .perink-highlight:hover { filter: saturate(2); }
+.is-live-preview .perink-strikethrough.has-comment:hover,
+.is-live-preview .perink-highlight.has-comment:hover{
+	text-decoration-style: wavy; text-decoration-skip-ink: none;
+}
+
+/* --- Editor Quad Widget --- */
+.perink-quad-widget {
+    user-select: none;
+    pointer-events: auto;
+    color: transparent; /* Hides any text content like non-breaking spaces */
+}
+
+
+/* --- Annotations Sidebar View --- */
+.omnidian-annotations-view {
+    padding: var(--size-4-2); height: 100%; overflow-y: auto;
+}
+.annotation-list-empty {
+    display: flex; justify-content: center; align-items: center;
+    height: 100%; color: var(--text-faint);
+}
+.annotation-list {
+    display: flex; flex-direction: column; gap: var(--size-4-3);
+}
+.annotation-card {
+    background-color: var(--background-secondary); border-radius: var(--radius-m);
+    padding: var(--size-4-2) var(--size-4-3); border: 1px solid var(--background-modifier-border);
+    cursor: pointer; transition: all 0.15s ease-in-out;
+}
+.annotation-card:hover {
+    background-color: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border-hover);
+    transform: translateY(-1px); box-shadow: var(--shadow-s);
+}
+.annotation-card.is-editing {
+    border-color: var(--interactive-accent); cursor: default;
+}
+.annotation-card.is-editing:hover {
+    transform: none; box-shadow: none;
+}
+.annotation-card-header {
+    display: flex; align-items: center; gap: var(--size-4-2);
+	justify-content: space-between;
+}
+.annotation-card-header-content {
+	display: flex; align-items: center; gap: var(--size-4-2);
+	flex-grow: 1; min-width: 0;
+}
+.annotation-remove-btn {
+	flex-shrink: 0;
+	color: var(--text-faint);
+	padding: var(--size-2-1);
+	border-radius: var(--radius-s);
+}
+.annotation-remove-btn:hover {
+	color: var(--color-red);
+	background-color: var(--background-modifier-hover);
+}
+.annotation-type-indicator {
+    flex-shrink: 0; width: 4px; height: 16px; border-radius: 2px;
+}
+.annotation-category {
+	font-size: var(--font-ui-smaller); color: var(--text-muted); font-weight: bold;
+}
+.annotation-text-preview {
+    font-size: var(--font-ui-smaller); color: var(--text-muted); font-style: italic;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.annotation-comment-wrapper {
+    display: flex; align-items: start; gap: var(--size-4-1);
+    padding-left: calc(var(--size-4-2) + 4px); margin-top: var(--size-4-2);
+}
+.annotation-comment-wrapper svg {
+    flex-shrink: 0; margin-top: 2px; color: var(--text-faint);
+}
+.annotation-comment {
+    font-size: var(--font-ui-smaller); color: var(--text-normal);
+}
+.annotation-edit-area {
+    margin-top: var(--size-4-2); padding-left: calc(var(--size-4-2) + 4px);
+}
+.annotation-edit-area textarea {
+    width: 100%; height: 60px; padding: var(--size-4-1) var(--size-4-2);
+    border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s);
+    background-color: var(--background-primary); color: var(--text-normal);
+    resize: vertical;
+}
+.annotation-edit-area textarea:focus {
+    border-color: var(--interactive-accent); outline: none;
+}
+
+/* --- Selection Popup --- */
+#perink-selection-popup {
+    position: absolute; z-index: var(--layer-modal); 
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-l);
+    display: flex; gap: 6px; padding: 6px; cursor: move;
+}
+#perink-selection-popup button {
+    background-color: transparent; border: none; padding: 6px 12px;
+    border-radius: var(--radius-m); cursor: pointer; color: var(--text-normal);
+    font-size: var(--font-ui-small); line-height: 1;
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+#perink-selection-popup button:hover {
+    background-color: var(--background-modifier-hover); color: var(--text-normal);
+}

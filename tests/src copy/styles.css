@@ -1,0 +1,133 @@
+/* Add a pointer cursor to indicate the status bar item is clickable */
+.status-bar-item.is-active,
+.status-bar-item.is-inactive {
+	cursor: pointer;
+}
+
+/* Style for the "ON" state - uses the theme's "success" color (often green) */
+.status-bar-item.is-active {
+	color: var(--color-green);
+}
+
+/* Style for the "OFF" state - uses a faded red color */
+.status-bar-item.is-inactive {
+	color: var(--color-red);
+	opacity: 0.75;
+}
+
+@tailwind components;
+@tailwind utilities;
+
+#perink-comment-popover-container {
+	border: none;
+	background: transparent;
+	/* background-color: var(--background-secondary); */
+	overflow: visible;
+	inset: unset;
+	position: absolute;
+	transform: translateX(-50%);
+}
+
+.is-live-preview .perink-strikethrough,
+.is-live-preview .perink-highlight {
+	cursor: context-menu;
+	padding: 0 !important;
+	display: inline;
+	height: auto;
+	border: 0;
+	user-select: none;
+	box-shadow: none;
+	font-family: var(--font-text);
+	font-size: var(--font-text-size);
+	border-radius: 0;
+}
+
+.is-live-preview .perink-strikethrough {
+	text-decoration: line-through;
+}
+
+.is-live-preview .perink-highlight {
+	background-color: var(--text-highlight-bg);
+}
+
+/* --- VISUALS FOR COMMENTS --- */
+
+.is-live-preview .perink-highlight.has-comment {
+	text-decoration-line: underline;
+	text-decoration-style: wavy;
+	text-decoration-color: var(--color-green);
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 3px;
+}
+
+/* First, apply the standard line-through to the new INNER span that holds the text. */
+/* This will apply to all strikethroughs, with or without comments. */
+.is-live-preview .perink-strikethrough > span {
+	text-decoration: line-through;
+	text-decoration-thickness: 1.5px;
+	text-decoration-color: rgba(var(--text-normal), .7)
+}
+
+/* Second, add the wavy red underline ONLY to the OUTER container span when it has a comment. */
+.is-live-preview .perink-strikethrough.has-comment {
+	text-decoration-line: underline;
+	text-decoration-style: wavy;
+	text-decoration-color: var(--color-blue);
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 3px;
+}
+
+
+.is-live-preview .perink-strikethrough:hover,
+.is-live-preview .perink-highlight:hover {
+	filter: saturate(2);
+	/* On hover, all parts of the decoration become solid */
+	text-decoration-style: solid;
+}
+
+/* --- VISUALS FOR READING VIEW --- */
+
+
+.markdown-reading-view .perink-highlight.hover,
+.markdown-reading-view del.hover {
+	filter: saturate(2);
+	text-decoration: underline;
+	text-decoration-style: dashed;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+.markdown-reading-view .perink-highlight:hover,
+.markdown-reading-view del:hover {
+	cursor: help;
+}
+
+/* --- Styles for the Selection Popup --- */
+#perink-selection-popup {
+    position: absolute;
+    z-index: var(--layer-modal); /* Ensure it's on top */
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    transition: opacity 0.1s ease-in-out;
+}
+
+#perink-selection-popup button {
+    background-color: var(--background-primary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+	line-height: 1;
+}
+
+#perink-selection-popup button:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-muted);
+}

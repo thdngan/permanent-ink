@@ -1,0 +1,142 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+/* Add a pointer cursor to indicate the status bar item is clickable */
+.status-bar-item.is-active, .status-bar-item.is-inactive {
+    cursor: pointer;
+}
+
+/* Style for the "ON" state - uses the theme's "success" color (often green) */
+.status-bar-item.is-active {
+    color: var(--color-green);
+}
+
+/* Style for the "OFF" state - uses a faded red color */
+.status-bar-item.is-inactive {
+    color: var(--color-red);
+    opacity: 0.75;
+}
+
+
+/* --- Annotation Sidebar Styles --- */
+.annotation-item { display: flex; align-items: center; padding: 2px; margin-bottom: 2px; border-radius: 4px; }
+.annotation-text { padding: 4px 8px; border-radius: 4px; flex-grow: 1; }
+.annotation-text:hover { background-color: var(--background-secondary-alt); cursor: pointer; }
+.annotation-item .annotation-delete-btn { visibility: hidden; opacity: 0; transition: opacity 0.2s ease-in-out; margin-left: auto; padding: 2px 6px; border: none; border-radius: 4px; background-color: var(--background-modifier-hover); }
+.annotation-item:hover .annotation-delete-btn { visibility: visible; opacity: 1; }
+.annotation-delete-btn:hover { background-color: var(--background-modifier-error-hover); color: var(--text-on-accent); }
+
+.permanent-ink-highlight {
+    background-color: var(--text-highlight-bg);
+    /* Make it feel more interactive on hover */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.permanent-ink-highlight:hover {
+    background-color: var(--text-accent);
+    color: var(--text-on-accent);
+    cursor: pointer;
+}
+
+/* This is the temporary "flash" when you click on an annotation in the sidebar */
+.highlight-flash {
+    animation: flash-animation 1.5s ease-out;
+}
+
+@keyframes flash-animation {
+    0% {
+        background-color: var(--text-accent-hover);
+    }
+    100% {
+        /* This will transition back to the base highlight color */
+        background-color: var(--text-highlight-bg);
+    }
+}
+
+/* --- Annotation Form & List Styles --- */
+
+.annotation-view-header {
+    padding: var(--size-4-2) var(--size-4-3);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.annotation-view-header h4 {
+    margin: 0;
+}
+
+.permanent-ink-annotations-container {
+    padding: 0;
+    margin: 0;
+}
+
+.permanent-ink-annotations-container hr {
+    margin: 0;
+    border-color: var(--background-modifier-border-faint);
+    border-style: solid;
+    border-width: 1px 0 0 0;
+}
+
+.new-annotation-form {
+    padding: var(--size-4-3);
+    background-color: var(--background-secondary);
+}
+
+.new-annotation-form label {
+    display: block;
+    font-size: var(--font-ui-small);
+    font-weight: bold;
+    margin-bottom: var(--size-4-2);
+}
+
+.new-annotation-input {
+    width: 100%;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-2);
+    margin-bottom: var(--size-4-2);
+    font-family: inherit;
+    color: inherit;
+    resize: vertical;
+}
+
+.new-annotation-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+}
+
+.annotation-entry {
+    padding: var(--size-4-3);
+    border-bottom: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    transition: background-color 0.1s ease-in-out;
+}
+
+.annotation-entry:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.annotation-entry p {
+    margin: 0;
+    font-size: var(--font-ui-small);
+}
+
+.annotation-entry em {
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+.annotation-empty-state {
+    padding: var(--size-4-3);
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+}
+
+
