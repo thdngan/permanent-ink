@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, type Editor } from "obsidian";
+import { ItemView, type Editor } from "obsidian";
 import { createRoot, type Root } from "react-dom/client";
 import { type EditorView } from "@codemirror/view";
 import { useState, useEffect, useRef } from "react";
