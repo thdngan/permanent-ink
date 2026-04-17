@@ -3,7 +3,7 @@
 	"name": "Permanent Ink",
 	"version": "1.0.0",
 	"minAppVersion": "0.12.0",
-	"description": "Pressing Backspace/Delete strikes through the nearby character instead of deleting it.",
+	"description": "Turn every deletion into a visible strikethrough, and keep a history of thought process with color-coded highlights and an annotation sidebar.",
 	"author": "thdngan",
 	"authorUrl": "https://github.com/thdngan",
 	"isDesktopOnly": false
