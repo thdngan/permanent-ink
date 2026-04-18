@@ -32,7 +32,7 @@ export class OmnidianSettingTab extends PluginSettingTab {
 		descFragment.append("Add comma separated list of ");
 		const colorLink = document.createElement("a");
 		colorLink.href = "https://147colors.com";
-		colorLink.textContent = "color names";
+		colorLink.textContent = "Color names";
 		descFragment.append(colorLink, ". Requires app reload.");
 
 		new Setting(containerEl)

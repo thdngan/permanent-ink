@@ -83,7 +83,7 @@ export default class OmnidianPlugin extends Plugin {
 		this.registerView(OMNIDIAN_ANNOTATIONS_VIEW_TYPE, (leaf) => new OmnidianAnnotationsView(leaf));
 
 		this.addRibbonIcon("message-square-quote", "Show annotations", () => {
-			this.activateView();
+			void this.activateView();
 		});
 
 		// Debounce the update function to avoid performance issues
@@ -102,7 +102,7 @@ export default class OmnidianPlugin extends Plugin {
 
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.id = "perink-gooey-filter";
-		svg.style.display = "none";
+		svg.setAttribute("style", "display: none;");
 		svg.setAttribute("version", "1.1");
 
 		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
@@ -919,7 +919,7 @@ export default class OmnidianPlugin extends Plugin {
 				active: true,
 			});
 
-			this.app.workspace.revealLeaf(leaf);
+			void this.app.workspace.revealLeaf(leaf);
 			this.updateAnnotationsView();
 		} else {
 			// This case is unlikely with getRightLeaf(true) but good for robustness.
@@ -1007,11 +1007,11 @@ export default class OmnidianPlugin extends Plugin {
 	private updateStatusBar(): void {
 		if (!this.statusBarItemEl) return;
 		if (this.isHighlightingModeOn) {
-			this.statusBarItemEl.setText("Permanent Ink: ON");
+			this.statusBarItemEl.setText("Permanent ink is on");
 			this.statusBarItemEl.className = "status-bar-item is-active";
 			this.statusBarItemEl.setAttribute("title", "Editing is restricted. Click to disable.");
 		} else {
-			this.statusBarItemEl.setText("Permanent Ink: OFF");
+			this.statusBarItemEl.setText("Permanent ink is off");
 			this.statusBarItemEl.className = "status-bar-item is-inactive";
 			this.statusBarItemEl.setAttribute("title", "Normal editing is allowed. Click to enable.");
 		}

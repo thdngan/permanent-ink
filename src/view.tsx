@@ -29,15 +29,17 @@ export class OmnidianAnnotationsView extends ItemView {
 	getDisplayText() { return "Annotations"; }
 	getIcon() { return "message-square-quote"; }
 
-	async onOpen() {
+	onOpen(): Promise<void> {
 		const container = this.containerEl.children[1];
 		container.empty();
 		this.root = createRoot(container);
 		this.render();
+		return Promise.resolve();
 	}
 
-	async onClose() {
+	onClose(): Promise<void> {
 		this.root?.unmount();
+		return Promise.resolve();
 	}
 
 	public setData(annotations: Annotation[], editor: Editor) {

@@ -107,7 +107,7 @@ function CombinedPopover({ anchorEl, type, initialComment, textToCopy, onSave, o
 
 	const handleCopy = () => {
 		wasActionTaken.current = true;
-		navigator.clipboard.writeText(textToCopy);
+		void navigator.clipboard.writeText(textToCopy);
 		new Notice("Copied to clipboard");
 
 		if (commentText.includes("-->") || commentText.includes("<!--")) {
@@ -172,7 +172,7 @@ export const TriggerPopoverEffect = StateEffect.define<{ from: number, to: numbe
 
 // --- UNIFIED ANNOTATION WIDGET ---
 export class AnnotationWidget extends WidgetType {
-	private view: EditorView | null = null;
+	private view?: EditorView;
 	private wrapperEl?: HTMLElement;
 
 	constructor(
