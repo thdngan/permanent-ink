@@ -212,3 +212,7 @@
 #perink-selection-popup button:hover {
     background-color: var(--background-modifier-hover); color: var(--text-normal);
 }
+
+#perink-gooey-filter {
+    display: none;
+}

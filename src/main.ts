@@ -102,7 +102,6 @@ export default class OmnidianPlugin extends Plugin {
 
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.id = "perink-gooey-filter";
-		svg.setAttribute("style", "display: none;");
 		svg.setAttribute("version", "1.1");
 
 		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
