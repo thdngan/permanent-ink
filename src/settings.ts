@@ -17,7 +17,9 @@ export class OmnidianSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Expand selection")
 			.setDesc(
-				"Expand the text selection boundary to highlight complete words (this avoids selections that can break markdown rendering, hold alt key while selecting to override this setting)."
+				document.createRange().createContextualFragment(
+					"Expand the text selection boundary to highlight complete words. This avoids selections that can break markdown rendering. Hold <kbd>Alt</kbd> while selecting to override this setting."
+				)
 			)
 			.addToggle((toggle) =>
 				toggle
