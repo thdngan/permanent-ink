@@ -17,9 +17,11 @@ export class OmnidianSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Expand selection")
 			.setDesc(
-				document.createRange().createContextualFragment(
-					"Expand the text selection boundary to highlight complete words. This avoids selections that can break markdown rendering. Hold <kbd>Alt</kbd> while selecting to override this setting."
-				)
+				createFragment((frag) => {
+					frag.appendText("Expand the text selection boundary to highlight complete words (this avoids selections that can break markdown rendering, hold ");
+					frag.createEl("kbd", { text: "alt" });
+					frag.appendText(" key while selecting to override this setting).");
+				})
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -30,7 +32,7 @@ export class OmnidianSettingTab extends PluginSettingTab {
 					})
 			);
 
-		const descFragment = document.createDocumentFragment();
+		const descFragment = createFragment();
 		descFragment.append("Add comma separated list of ");
 		const colorLink = document.createElement("a");
 		colorLink.href = "https://147colors.com";

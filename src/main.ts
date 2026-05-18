@@ -98,28 +98,28 @@ export default class OmnidianPlugin extends Plugin {
 	 * needed for the "gooey" blob effect in the color palette.
 	 */
 	private injectGooeyFilter() {
-		if (document.getElementById("perink-gooey-filter")) return;
+		if (activeDocument.getElementById("perink-gooey-filter")) return;
 
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = createSvg("svg");
 		svg.id = "perink-gooey-filter";
 		svg.setAttribute("version", "1.1");
 
-		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-		const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+		const defs = createSvg("defs");
+		const filter = createSvg("filter");
 		filter.id = "goo";
 
-		const feGaussianBlur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+		const feGaussianBlur = createSvg("feGaussianBlur");
 		feGaussianBlur.setAttribute("in", "SourceGraphic");
 		feGaussianBlur.setAttribute("stdDeviation", "10");
 		feGaussianBlur.setAttribute("result", "blur");
 
-		const feColorMatrix = document.createElementNS("http://www.w3.org/2000/svg", "feColorMatrix");
+		const feColorMatrix = createSvg("feColorMatrix");
 		feColorMatrix.setAttribute("in", "blur");
 		feColorMatrix.setAttribute("mode", "matrix");
 		feColorMatrix.setAttribute("values", "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7");
 		feColorMatrix.setAttribute("result", "goo");
 
-		const feBlend = document.createElementNS("http://www.w3.org/2000/svg", "feBlend");
+		const feBlend = createSvg("feBlend");
 		feBlend.setAttribute("in", "SourceGraphic");
 		feBlend.setAttribute("in2", "goo");
 
@@ -127,7 +127,7 @@ export default class OmnidianPlugin extends Plugin {
 		defs.appendChild(filter);
 		svg.appendChild(defs);
 
-		document.body.appendChild(svg);
+		activeDocument.body.appendChild(svg);
 	}
 
 
@@ -633,7 +633,7 @@ export default class OmnidianPlugin extends Plugin {
 	private createSelectionPopup(editor: Editor) {
 		this.removeSelectionPopup(); // Ensure no duplicates
 
-		const popup = document.createElement("div");
+		const popup = createDiv();
 		popup.id = "perink-selection-popup";
 
 		// --- Make the popup draggable ---

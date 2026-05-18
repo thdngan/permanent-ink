@@ -8,10 +8,10 @@ import { matchColor } from "@/lib/utils";
 import Draggable from 'react-draggable';
 
 // --- GLOBAL POPOVER SETUP ---
-const unifiedPopoverContainerEl = document.createElement("div");
+const unifiedPopoverContainerEl = createDiv();
 unifiedPopoverContainerEl.setAttribute("popover", "auto");
 unifiedPopoverContainerEl.id = "perink-unified-popover-container";
-document.body.appendChild(unifiedPopoverContainerEl);
+activeDocument.body.appendChild(unifiedPopoverContainerEl);
 const unifiedPopoverRoot: Root = createRoot(unifiedPopoverContainerEl);
 
 export function cleanup() {
@@ -193,7 +193,7 @@ export class AnnotationWidget extends WidgetType {
 
 	toDOM(view: EditorView): HTMLElement {
 		this.view = view;
-		this.wrapperEl = document.createElement("span");
+		this.wrapperEl = createSpan();
 		this.wrapperEl.className = `perink-${this.type}`;
 		if (this.hasComment) this.wrapperEl.classList.add("has-comment");
 
@@ -201,7 +201,7 @@ export class AnnotationWidget extends WidgetType {
 			this.wrapperEl.textContent = this.text;
 			this.setHighlightColor(this.comment);
 		} else {
-			const innerSpan = document.createElement("span");
+			const innerSpan = createSpan();
 			innerSpan.textContent = this.text;
 			this.wrapperEl.appendChild(innerSpan);
 		}
@@ -281,7 +281,7 @@ export class QuadWidget extends WidgetType {
 	}
 
 	toDOM(view: EditorView): HTMLElement {
-		const span = document.createElement("span");
+		const span = createSpan();
 		span.className = 'perink-quad-widget';
 		span.setAttribute('aria-hidden', 'true');
 		
@@ -391,7 +391,7 @@ export function highlightExtension(colorOptions: string[]): Extension {
 				const showEffect = tr.effects.find(e => e.is(ShowPopoverEffect));
 				if (showEffect) {
 					// Use a minimal timeout here ONLY for new creations to ensure the widget has been rendered.
-					setTimeout(() => findAndShow(showEffect.value.from, showEffect.value.to, showEffect.value.type), 0);
+					activeWindow.setTimeout(() => findAndShow(showEffect.value.from, showEffect.value.to, showEffect.value.type), 0);
 					continue;
 				}
 
