@@ -1,18 +1,12 @@
 # Permanent Ink
 
-*Every word counts.*
-
----
-
-## What is this?
-
 In the age of digital perfection, we often lose the messy, authentic process of thinking and writing. Every backspace erases not just letters, but the story of how an idea came to be.
 
-Permanent Ink turns your Obsidian editor into a canvas where thoughts layer upon each other. When you hit Backspace or Delete, words don't vanish, they get crossed out, creating a visible record of your mind at work.
+This plugin turns your Obsidian editor into a canvas where thoughts layer upon each other. When you hit Backspace or Delete, words get crossed out instead of vanishing, creating a visible record of your mind at work.
 
-Picture this: you're writing and type "she walked nervously" but then change it to "she paced." With Permanent Ink, you get `she ~~walked nervously~~ paced`. The evolution preserved. Your false starts become your marginalia.
+Picture this: you're writing and type "she walked nervously" but then change it to "she paced." With Permanent Ink, you get `she ~~walked nervously~~ paced`. So the evolution is preserved.
 
-This plugin was built on top of ideas from [jancbeck/obsidian-note-annotations](https://github.com/jancbeck/obsidian-note-annotations). What started as a few personal modifications grew into something different enough to live on its own.
+This plugin was built on top of ideas from [jancbeck/obsidian-note-annotations](https://github.com/jancbeck/obsidian-note-annotations). What started as a few personal modifications grew into something different enough.
 
 ---
 
@@ -20,7 +14,7 @@ This plugin was built on top of ideas from [jancbeck/obsidian-note-annotations](
 
 ### Restricted writing mode
 
-The core of the plugin. When active (shown as **Permanent Ink: ON** in your status bar), the editor enforces a write-forward discipline:
+The main purpose of the plugin. When active (shown as **Permanent Ink: ON** in your status bar), the editor enforces a write-forward discipline:
 
 - **Backspace and Delete apply strikethroughs** instead of erasing. Selecting text and pressing either key wraps the selection in `~~strikethrough~~`.
 - **New text always goes to the end.** Typing mid-document moves your cursor to the last line first. If you're inside a recognized delimiter pair at the document's end (like parentheses or brackets), the cursor jumps to just before the closing character instead.
@@ -53,8 +47,8 @@ Like highlights, clicking a strikethrough in live preview opens the same popover
 
 Whenever you select text with your mouse or finger, a small floating toolbar appears near the selection with two options:
 
-- **Cross out** — applies a strikethrough
-- **Highlight** — applies a highlight
+- **Cross out**: applies a strikethrough
+- **Highlight**: applies a highlight
 
 The popup is draggable. You can also use keyboard shortcuts (`H` for highlight, `Backspace`/`Delete` for strikethrough) while it's open.
 
@@ -113,9 +107,3 @@ Open **Settings → Permanent Ink** to adjust:
 | Arrow keys | Navigation, with smart skipping around annotation blocks and quad indentation |
 
 ---
-
-## A Note on Writing
-
-*"The first draft of anything is shit."* — Ernest Hemingway.
-
-Maybe that's exactly why we should keep it around.
