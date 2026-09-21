@@ -1,7 +1,7 @@
 {
 	"id": "permanent-ink",
 	"name": "Permanent Ink",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"minAppVersion": "1.7.2",
 	"description": "Turn every deletion into a visible strikethrough, and keep a history of thought process with color-coded highlights and an annotation sidebar.",
 	"author": "thdngan",

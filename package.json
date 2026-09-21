@@ -1,6 +1,6 @@
 {
 	"name": "permanent-ink",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "Turn every deletion into a visible strikethrough, and keep a history of thought process with color-coded highlights and an annotation sidebar.",
 	"main": "./build/main.js",
 	"scripts": {
