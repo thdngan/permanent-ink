@@ -96,8 +96,6 @@ export default class OmnidianPlugin extends Plugin {
 			name: "Toggle editing mode",
 			// A plain callback, so the shortcut also works while the focus is outside the editor.
 			callback: () => this.toggleHighlightingMode(),
-			// Free among Obsidian's own defaults, and can be changed in Settings > Hotkeys.
-			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "E" }],
 		});
 
 		this.addSettingTab(new OmnidianSettingTab(this.app, this));
@@ -258,7 +256,7 @@ export default class OmnidianPlugin extends Plugin {
 		}
 
 		// Use a small timeout to allow the selection to be properly registered
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (editor.getSelection()) {
 				this.createSelectionPopup(editor);
 			} else {
@@ -1112,7 +1110,8 @@ export default class OmnidianPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const saved = (await this.loadData()) as Partial<OmnidianSettings> | null;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, saved);
 	}
 
 	async saveSettings() {

@@ -343,7 +343,7 @@ function AnnotationsListComponent({ annotations, editorView, onItemClick, onComm
 		onItemClick(annotation.from, annotation.to);
 		setEditingAnnotationFrom(annotation.from);
 
-        setTimeout(() => {
+        window.setTimeout(() => {
             isSwitchingAnnotation.current = false;
         }, 100);
      };
@@ -552,7 +552,7 @@ function AnnotationEditComponent({ annotation, onSave }: {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
-        setTimeout(() => {
+        window.setTimeout(() => {
             if (textareaRef.current) {
                 textareaRef.current.focus();
                 const len = textareaRef.current.value.length;

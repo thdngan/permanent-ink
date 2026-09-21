@@ -44,12 +44,11 @@ export class OmnidianSettingTab extends PluginSettingTab {
 					})
 			);
 
-		const descFragment = createFragment();
-		descFragment.append("Add comma separated list of ");
-		const colorLink = document.createElement("a");
-		colorLink.href = "https://147colors.com";
-		colorLink.textContent = "Color names";
-		descFragment.append(colorLink, ". Requires app reload.");
+		const descFragment = createFragment((frag) => {
+			frag.appendText("Add comma separated list of ");
+			frag.createEl("a", { text: "Color names", href: "https://147colors.com" });
+			frag.appendText(". Requires app reload.");
+		});
 
 		new Setting(containerEl)
 			.setName("Highlighting color options")

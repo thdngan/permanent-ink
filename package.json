@@ -46,6 +46,8 @@
 		"typescript-eslint": "^8.13.0"
 	},
 	"dependencies": {
+		"@codemirror/state": "6.5.0",
+		"@codemirror/view": "6.38.6",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-draggable": "^4.5.0",

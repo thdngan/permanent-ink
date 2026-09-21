@@ -25,7 +25,7 @@ The main purpose of the plugin. When active (shown as **Permanent ink is on** in
 - **Cursor navigation is annotation-aware.** Arrow keys skip over highlight and strikethrough blocks atomically, so you never land inside the `==` or `~~` markers. Note pins are skipped the same way.
 - **Only the text is permanent.** The file name at the top of the note, the Properties block, and the search bar all work normally, so you can still rename a file or edit its properties while the mode is on.
 
-Toggle the mode by clicking the status bar item, pressing `Ctrl/Cmd+Shift+E`, or running the **Toggle editing mode** command. The shortcut works even when the editor isn't focused, and you can change it under **Settings → Hotkeys**.
+Toggle the mode by clicking the status bar item or running the **Toggle editing mode** command. To toggle it from the keyboard, assign a shortcut to that command under **Settings → Hotkeys**. The shortcut works even when the editor isn't focused.
 
 ### Highlights
 
@@ -137,7 +137,7 @@ Open **Settings → Permanent Ink** to adjust:
 | `Ctrl/Cmd+Z` | Blocked |
 | `Ctrl/Cmd+X` | Blocked |
 | Arrow keys | Navigation, with smart skipping around annotation blocks, note pins, and quad indentation |
-| `Ctrl/Cmd+Shift+E` | Turns restricted mode on or off |
+| Your **Toggle editing mode** hotkey | Turns restricted mode on or off (assign one under **Settings → Hotkeys**) |
 
 ---
 

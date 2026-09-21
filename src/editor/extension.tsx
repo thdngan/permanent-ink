@@ -414,7 +414,7 @@ export function highlightExtension(colorOptions: string[], notes: NoteStore): Ex
 			const findAndShow = (from: number, to: number, type?: 'highlight' | 'strikethrough') => {
 				update.state.field(decorationStateField).between(from, to, (dFrom, _dTo, deco) => {
 					if (dFrom === from) {
-						const widget = deco.spec.widget as AnnotationWidget;
+						const widget = (deco.spec as { widget?: unknown }).widget;
 						if (widget instanceof AnnotationWidget && (!type || widget['type'] === type)) {
 							// Directly tell the widget to show itself. The widget will handle the details.
 							widget.showPopovers();
@@ -428,7 +428,7 @@ export function highlightExtension(colorOptions: string[], notes: NoteStore): Ex
 				const showEffect = tr.effects.find(e => e.is(ShowPopoverEffect));
 				if (showEffect) {
 					// Use a minimal timeout here ONLY for new creations to ensure the widget has been rendered.
-					activeWindow.setTimeout(() => findAndShow(showEffect.value.from, showEffect.value.to, showEffect.value.type), 0);
+					window.setTimeout(() => findAndShow(showEffect.value.from, showEffect.value.to, showEffect.value.type), 0);
 					continue;
 				}
 
