@@ -50,7 +50,7 @@ Like highlights, clicking a strikethrough in live preview opens the same popover
 
 ### Selection popup
 
-Whenever you select text with your mouse or finger, a small floating toolbar appears near the selection with two options:
+Whenever you select text with your mouse or finger, a small floating toolbar appears near the selection with 2 options:
 
 - **Cross out**: applies a strikethrough
 - **Highlight**: applies a highlight
@@ -61,7 +61,7 @@ The popup is draggable. You can also use keyboard shortcuts (`H` for highlight, 
 
 Click the quote icon in the ribbon to open a sidebar panel listing every highlight, strikethrough, and note in the current document.
 
-Cards sit right next to the text they belong to, like comments in Google Docs. Scroll the editor and the cards scroll along with it. Scroll the sidebar and the editor follows. When two annotations are close together, the cards stack instead of overlapping, so a busy paragraph pushes its cards a little further down.
+Cards sit right next to the text they belong to, like comments in Google Docs. Scroll the editor and the cards scroll along with it. Scroll the sidebar and the editor follows. When 2 annotations are close together, the cards stack instead of overlapping, so a busy paragraph pushes its cards a little further down.
 
 Each card shows the annotated text, its type, and any attached comment. Clicking a card scrolls the editor to that annotation and briefly flashes a red outline around it. From the card you can:
 
