@@ -10,18 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # Required by actions/attest-build-provenance to sign the artifacts.
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-            bun-version: "latest"
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build plugin
-        run: |
-          bun install
-          bun run build
+        run: npm run build
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            build/main.js
+            build/manifest.json
+            build/styles.css
 
       - name: Create release
         env:
@@ -35,4 +48,5 @@ jobs:
             --title="$tag" \
             --draft \
             --verify-tag \
+            --generate-notes \
             main.js manifest.json styles.css

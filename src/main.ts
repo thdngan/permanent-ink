@@ -1,23 +1,27 @@
-import { Plugin, Editor, Notice, MarkdownView, type EditorPosition, debounce } from "obsidian";
+import { Plugin, Editor, Notice, MarkdownView, type EditorPosition, type TFile, debounce } from "obsidian";
+import { type EditorView } from "@codemirror/view";
 import { highlightExtension, cleanup } from "./editor/extension";
 import { OmnidianSettingTab } from "@/settings";
 import { createHighlightCommand, createStrikethroughCommand, applyStrikethroughOnSelection } from "@/editor/commands";
 import postprocessor from "@/preview/postprocessor";
 import { OmnidianAnnotationsView, OMNIDIAN_ANNOTATIONS_VIEW_TYPE, type Annotation } from "./view";
 import { matchColor } from "./lib/utils";
-import "../manifest.json";
+import { NoteStore, noteMarker, NOTE_MARKER_REGEX } from "./notes";
 
 export interface OmnidianSettings {
 	expandSelection: boolean;
 	colors: string[];
+	// Whether restricted mode also applies inside note files, or only to the posts themselves
+	permanentNotes: boolean;
 }
 
 const DEFAULT_SETTINGS: OmnidianSettings = {
 	expandSelection: true,
 	colors: ["lightpink", "palegreen", "paleturquoise", "violet"],
+	permanentNotes: false,
 };
 
-const FINAL_ANNOTATION_BLOCK_REGEX = /(?:==.*?==|~~.*?~~)(?:<!--.*?-->)?$/;
+const FINAL_ANNOTATION_BLOCK_REGEX = /(?:==.*?==|~~.*?~~)(?:<!--(?!note:).*?-->)?$/;
 const DELIMITER_PAIRS = [
 	["(", ")"], ["[", "]"], ["{", "}"],
 	["'", "'"], ['"', '"'], ["`", "`"],
@@ -38,6 +42,7 @@ export default class OmnidianPlugin extends Plugin {
 	private selectionPopup: HTMLElement | null = null;
 	private debouncedUpdate!: () => void;
 	private popupKeydownHandler: ((evt: KeyboardEvent) => void) | null = null;
+	notes!: NoteStore;
 
 	async onload() {
 		// --- To inject the SVG filter on load ---
@@ -50,7 +55,29 @@ export default class OmnidianPlugin extends Plugin {
 		});
 
 		this.addStatusBarModeIndicator();
-		this.registerEditorExtension([highlightExtension(this.settings.colors)]);
+		this.notes = new NoteStore(this.app);
+		this.registerEditorExtension([highlightExtension(this.settings.colors, this.notes)]);
+
+		// Notes are found by the id in their frontmatter, so these keep that lookup current as
+		// notes are edited, renamed, moved or deleted. A document's notes folder also moves
+		// along with the document.
+		this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => this.notes.onMetadataChanged(file, data, cache)));
+		this.registerEvent(this.app.vault.on("rename", (file, oldPath) => void this.notes.onFileRenamed(file, oldPath)));
+		this.registerEvent(this.app.vault.on("delete", (file) => this.notes.onFileDeleted(file)));
+
+		this.addCommand({
+			id: "add-note",
+			name: "Add note at cursor",
+			icon: "sticky-note",
+			editorCallback: (editor, ctx) => this.addNote(editor, ctx.file),
+		});
+
+		this.registerEvent(this.app.workspace.on("editor-menu", (menu, editor, info) => {
+			menu.addItem((item) => item
+				.setTitle("Add note here")
+				.setIcon("sticky-note")
+				.onClick(() => this.addNote(editor, info.file)));
+		}));
 
 		this.addCommand({
 			id: "create-highlight",
@@ -67,7 +94,10 @@ export default class OmnidianPlugin extends Plugin {
 		this.addCommand({
 			id: "toggle-highlighting-mode",
 			name: "Toggle editing mode",
-			editorCallback: () => this.toggleHighlightingMode(),
+			// A plain callback, so the shortcut also works while the focus is outside the editor.
+			callback: () => this.toggleHighlightingMode(),
+			// Free among Obsidian's own defaults, and can be changed in Settings > Hotkeys.
+			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "E" }],
 		});
 
 		this.addSettingTab(new OmnidianSettingTab(this.app, this));
@@ -80,7 +110,7 @@ export default class OmnidianPlugin extends Plugin {
 		this.registerDomEvent(this.app.workspace.containerEl, "keydown", this.handleKeydownInRestrictedMode, true);
 		
 		// --- View Registration & Event Handling ---
-		this.registerView(OMNIDIAN_ANNOTATIONS_VIEW_TYPE, (leaf) => new OmnidianAnnotationsView(leaf));
+		this.registerView(OMNIDIAN_ANNOTATIONS_VIEW_TYPE, (leaf) => new OmnidianAnnotationsView(leaf, this.notes));
 
 		this.addRibbonIcon("message-square-quote", "Show annotations", () => {
 			void this.activateView();
@@ -139,6 +169,14 @@ export default class OmnidianPlugin extends Plugin {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view) return;
 		const editor = view.editor;
+
+		// Only the text itself is permanent. The same view also holds the file name (inline
+		// title), the Properties block and the search bar, and typing there must work normally.
+		const contentDOM = (editor as Editor & { cm: EditorView }).cm.contentDOM;
+		if (!(evt.target instanceof Node) || !contentDOM.contains(evt.target)) return;
+
+		// Notes are asides rather than part of the writing, so by default they can be edited freely.
+		if (!this.settings.permanentNotes && this.notes.isNoteFile(view.file)) return;
 
 		// --- Arrow Key Navigation ---
 		if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(evt.key)) {
@@ -749,7 +787,8 @@ export default class OmnidianPlugin extends Plugin {
 	
 	private findAnnotationBlockAtCursor(editor: Editor, cursor: EditorPosition): { start: EditorPosition, end: EditorPosition } | null {
 		const lineText = editor.getLine(cursor.line);
-		const annotationRegex = /(?:==.*?==|~~.*?~~)(?:<!--.*?-->)?/g;
+		// A note marker counts as a block too, so arrow keys and Backspace step over a pin whole.
+		const annotationRegex = /(?:==.*?==|~~.*?~~)(?:<!--(?!note:).*?-->)?|<!--note:[a-z0-9]+-->/g;
 		let match;
 		while ((match = annotationRegex.exec(lineText)) !== null) {
 			const startCh = match.index;
@@ -903,6 +942,36 @@ export default class OmnidianPlugin extends Plugin {
 	}
 
 
+	// --- Notes ---
+
+	/**
+	 * Pins a new note at the cursor and opens its file in a new tab for writing. The marker is
+	 * invisible and the note itself lives in its own file, so this is allowed even though
+	 * restricted mode keeps the text itself append only.
+	 */
+	private addNote(editor: Editor, file: TFile | null) {
+		if (!file) {
+			new Notice("Notes can only be added to a saved file.");
+			return;
+		}
+		const view = (editor as Editor & { cm: EditorView }).cm;
+
+		// Never inside a highlight, strikethrough or another note, where the marker would be
+		// swallowed. Jump past the end of it instead.
+		let cursor = editor.getCursor("to");
+		const block = this.findAnnotationBlockAtCursor(editor, cursor);
+		if (block && cursor.ch > block.start.ch && cursor.ch < block.end.ch) cursor = block.end;
+
+		const offset = editor.posToOffset(cursor);
+		const id = this.notes.newId();
+		const marker = noteMarker(id);
+		view.dispatch({
+			changes: { from: offset, insert: marker },
+			selection: { anchor: offset + marker.length },
+		});
+		void this.notes.open(id, file.path).catch(() => new Notice("Could not create the note file."));
+	}
+
 	// --- Annotation View Logic ---
 
 	/**
@@ -944,7 +1013,7 @@ export default class OmnidianPlugin extends Plugin {
 			const content = editor.getValue();
 			const annotations: Annotation[] = [];
 			
-			const annotationRegex = /(?:(==(.*?)==)|(~~(.*?)~~))(?:<!--(.*?)-->)?/gs;
+			const annotationRegex = /(?:(==(.*?)==)|(~~(.*?)~~))(?:<!--(?!note:)(.*?)-->)?/gs;
 	
 			for (const match of content.matchAll(annotationRegex)) {
 				const isHighlight = !!match[1];
@@ -969,7 +1038,27 @@ export default class OmnidianPlugin extends Plugin {
 				});
 			}
 			
-			leaves.forEach(leaf => (leaf.view as OmnidianAnnotationsView).setData(annotations, editor));
+			// Notes, skipping any marker that sits inside an annotation (the editor hides those too).
+			for (const match of content.matchAll(NOTE_MARKER_REGEX)) {
+				if (match.index === undefined) continue;
+				const from = match.index;
+				const to = from + match[0].length;
+				if (annotations.some(ann => from < ann.to && to > ann.from)) continue;
+				annotations.push({
+					type: 'note',
+					text: '',
+					comment: '',
+					line: editor.offsetToPos(from).line,
+					color: null,
+					from,
+					to,
+					noteId: match[1],
+				});
+			}
+			annotations.sort((a, b) => a.from - b.from);
+
+			const docPath = activeMarkdownView.file?.path ?? null;
+			leaves.forEach(leaf => (leaf.view as OmnidianAnnotationsView).setData(annotations, editor, docPath));
 		} else {
 			// A markdown editor is NOT active. Check if our custom view is active.
 			const activeAnnotationsView = this.app.workspace.getActiveViewOfType(OmnidianAnnotationsView);

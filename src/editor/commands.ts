@@ -76,7 +76,7 @@ function processSelectionAndApplyMark(editor: Editor, expandSelection: boolean, 
         const toPos = { line: lineNum, ch: finalEndCh };
 
         // --- 3. Process for existing annotations ---
-        const thingsToIgnoreRegex = /(?:==.*?==|~~.*?~~)(?:<!--.*?-->)?|\$\s*\\quad.*?\$\s?/g;
+        const thingsToIgnoreRegex = /(?:==.*?==|~~.*?~~)(?:<!--(?!note:).*?-->)?|<!--note:[a-z0-9]+-->|\$\s*\\quad.*?\$\s?/g;
         const matches = [...textToProcess.matchAll(thingsToIgnoreRegex)];
 
         if (matches.length === 0) {

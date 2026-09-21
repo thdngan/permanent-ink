@@ -25,3 +25,9 @@ build/
 sandbox/.obsidian/plugins/
 !sandbox/.obsidian/plugins/plugin/.hotreload
 references/
+
+# python virtualenv
+venv/
+
+# Local only
+clips/*.mp4

@@ -32,6 +32,18 @@ export class OmnidianSettingTab extends PluginSettingTab {
 					})
 			);
 
+		new Setting(containerEl)
+			.setName("Keep notes permanent")
+			.setDesc("Apply the same restrictions to notes as to your writing: no deleting, and typing always continues at the end. When off, notes can be edited freely while posts stay permanent.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.permanentNotes)
+					.onChange(async (value) => {
+						this.plugin.settings.permanentNotes = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
 		const descFragment = createFragment();
 		descFragment.append("Add comma separated list of ");
 		const colorLink = document.createElement("a");

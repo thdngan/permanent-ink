@@ -59,7 +59,7 @@ export default function CommentPopover({
 			axis="both"
 			handleSize={[10, 10]}
 		>
-			<div className={cn("perink-popover flex h-full w-full flex-col rounded-lg border border-solid p-0 shadow-lg")} style={{ backgroundColor: "var(--background-primary)" }}>
+			<div className={cn("perink-popover flex h-full w-full flex-col rounded-lg border border-solid p-0 shadow-lg")}>
 				{/* ADD 'perink-popover-drag-handle' CLASS HERE */}
 				<div className="perink-popover-drag-handle flex w-full items-center gap-2 p-1 pl-2" style={{ borderBottom: "1px solid var(--background-modifier-border)" }}>
 					<div className="flex-grow text-xs text-muted">Annotation</div>
@@ -79,7 +79,7 @@ export default function CommentPopover({
 						ref={inputRef}
 						value={commentText}
 						onChange={(e) => onCommentChange(e.target.value)}
-						className="h-full w-full resize-none rounded-none border-none p-0 !shadow-none"
+						className="perink-popover-input h-full w-full resize-none rounded-none border-none p-0"
 						placeholder="Type a note..."
 					/>
 				</div>

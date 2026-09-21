@@ -8,27 +8,25 @@
 .status-bar-item.is-active { color: var(--color-green); }
 .status-bar-item.is-inactive { color: var(--color-red); opacity: 0.75; }
 
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-/* --- Editor Focus Indicator (for sidebar clicks) --- */
-.perink-focus-indicator {
-    position: absolute;
-    z-index: var(--layer-selection); /* Renders below text selection */
-    pointer-events: none;
-    /* border: 2px solid var(--interactive-accent); */
-    border: 3px solid #ff3355;
-    /* border: none; */
+/* --- Editor Focus Flash (for sidebar clicks) --- */
+/* An outline rather than a border or an overlay, so it takes up no space, the surrounding
+   text never reflows, and CodeMirror keeps it on the annotation by itself. An outline is
+   also painted after the backgrounds inside it, which a box-shadow is not: with a rounded
+   shape, a shadow's ends fall inside the element's box, where an opaque highlight colour
+   paints straight over them. Each visual line gets its own outline when an annotation wraps. */
+.perink-focus-flash {
     border-radius: var(--radius-l);
-    /* box-shadow: 0 0 10px #ff3355, 0 0 5px white; Adds an outer glow */
-    opacity: 1;
-    animation: perink-fade-out 2s ease-out forwards;
+    outline: 3px solid transparent;
+    animation: perink-focus-flash-fade 2s ease-out forwards;
 }
 
-@keyframes perink-fade-out {
-    0% { opacity: 1; transform: scale(1.0); }
-    75% { opacity: 1; transform: scale(1.02); } /* Stays opaque for longer and adds a subtle pulse */
-    100% { opacity: 0; transform: scale(1.05); }
+@keyframes perink-focus-flash-fade {
+    0% { outline-color: #ff3355; outline-offset: 0; }
+    75% { outline-color: #ff3355; outline-offset: 0; } /* Stays opaque for longer */
+    100% { outline-color: rgba(255, 51, 85, 0); outline-offset: 4px; } /* Then fades with a subtle pulse */
 }
 
 /* --- Unified Popover (for editor clicks) --- */
@@ -56,8 +54,11 @@
     height: 5px; border-right: 2px solid var(--text-faint); border-bottom: 2px solid var(--text-faint);
 }
 .perink-popover {
-    background-color: var(--background-secondary) !important;
+    background-color: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);
+}
+.perink-popover .perink-popover-input {
+	box-shadow: none;
 }
 
 /* --- Color Palette in Popover --- */
@@ -79,35 +80,87 @@
 
 /* --- LIVE PREVIEW WIDGET STYLES --- */
 
-.is-live-preview .perink-strikethrough,
-.is-live-preview .perink-highlight {
+.markdown-source-view.mod-cm6.is-live-preview .perink-strikethrough,
+.markdown-source-view.mod-cm6.is-live-preview .perink-highlight {
 	cursor: context-menu;
-	padding: 0 !important; display: inline; height: auto; border: 0;
+	padding: 0; display: inline; height: auto; border: 0;
 	user-select: none; box-shadow: none; font-family: var(--font-text);
 	font-size: var(--font-text-size); border-radius: 0;
 }
 .is-live-preview .perink-strikethrough { text-decoration: none; }
 .is-live-preview .perink-highlight { background-color: var(--text-highlight-bg); }
 .is-live-preview .perink-highlight.has-comment {
-	text-decoration-line: underline; text-decoration-style: dashed;
-	text-decoration-color: var(--color-gray); text-decoration-thickness: 1px;
+	text-decoration: underline dashed var(--color-gray, currentColor) 1px;
 	text-underline-offset: 2px;
 }
 .is-live-preview .perink-strikethrough > span {
-	text-decoration: line-through; text-decoration-thickness: 1px;
-	text-decoration-color: rgba(var(--text-normal), .7)
+	text-decoration: line-through 1px;
 }
 .is-live-preview .perink-strikethrough.has-comment {
-	text-decoration-line: underline; text-decoration-style: dashed;
-	text-decoration-color: var(--color-gray); text-decoration-thickness: 1px;
+	text-decoration: underline dashed var(--color-gray, currentColor) 1px;
 	text-underline-offset: 2px;
 }
 .is-live-preview .perink-strikethrough:hover,
 .is-live-preview .perink-highlight:hover { filter: saturate(2); }
 .is-live-preview .perink-strikethrough.has-comment:hover,
 .is-live-preview .perink-highlight.has-comment:hover{
-	text-decoration-style: wavy; text-decoration-skip-ink: none;
+	text-decoration: underline wavy var(--color-gray, currentColor) 1px;
 }
+
+/* --- Notes --- */
+/* The pin sits a little above the baseline without vertical-align, which would make the line
+   taller, and stays small so it reads as a mark in the margin of the text rather than a word. */
+.perink-note-pin {
+	--icon-size: 0.8em;
+	--icon-stroke: 2.25px;
+	display: inline-flex; align-items: center; justify-content: center;
+	position: relative; top: -0.35em;
+	margin: 0 1px; padding: 1px;
+	color: var(--text-accent); cursor: pointer;
+	border-radius: var(--radius-s);
+	line-height: 1;
+}
+.perink-note-pin:hover {
+	color: var(--text-accent-hover);
+	background-color: var(--background-modifier-hover);
+}
+
+.perink-note-popover {
+	pointer-events: auto;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: var(--shadow-l);
+	overflow: hidden;
+}
+.perink-note-popover-header {
+	display: flex; align-items: center; gap: var(--size-2-1);
+	padding: var(--size-2-2) var(--size-4-1) var(--size-2-2) var(--size-4-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	cursor: move;
+}
+.perink-note-popover-title {
+	flex-grow: 1;
+	font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); color: var(--text-muted);
+}
+.perink-note-popover-button { cursor: pointer; }
+.perink-note-popover-body {
+	max-height: 360px; overflow-y: auto;
+	padding: var(--size-4-2) var(--size-4-3);
+	font-size: var(--font-ui-small);
+	/* Read only, but the text can be selected and copied like in reading view. */
+	user-select: text; cursor: auto;
+}
+.perink-note-empty, .annotation-note-empty {
+	color: var(--text-faint); font-style: italic; font-size: var(--font-ui-smaller);
+}
+
+/* Rendered notes are compact, since they live in a small popover or card. */
+.perink-note-popover-body .markdown-rendered > :first-child,
+.annotation-note-preview > :first-child { margin-top: 0; }
+.perink-note-popover-body .markdown-rendered > :last-child,
+.annotation-note-preview > :last-child { margin-bottom: 0; }
 
 /* --- Editor Quad Widget --- */
 .perink-quad-widget {
@@ -128,10 +181,26 @@
 .annotation-list {
     display: flex; flex-direction: column; gap: var(--size-4-3);
 }
+/* Anchored layout: each card is placed level with the text it annotates, and the pane is
+   scrolled in step with the editor, so the cards track the document. The tops are set from
+   JavaScript, everything else stays the same as in the plain list. */
+.omnidian-annotations-view.is-anchored {
+    overflow-y: auto; overscroll-behavior: contain;
+}
+.annotation-canvas {
+    position: relative;
+}
+.annotation-canvas .annotation-anchor {
+    position: absolute; left: 0; right: 0;
+}
 .annotation-card {
     background-color: var(--background-secondary); border-radius: var(--radius-m);
     padding: var(--size-4-2) var(--size-4-3); border: 1px solid var(--background-modifier-border);
-    cursor: pointer; transition: all 0.15s ease-in-out;
+    cursor: pointer;
+    /* Not "all": a card's top is what places it beside its text, and animating that would
+       leave the cards lagging behind the text on every scroll. */
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+                box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
 }
 .annotation-card:hover {
     background-color: var(--background-modifier-hover);
@@ -193,6 +262,25 @@
 }
 .annotation-edit-area textarea:focus {
     border-color: var(--interactive-accent); outline: none;
+}
+/* Note cards show the start of the note, the full text is one click away. */
+.annotation-note-preview, .annotation-note-empty {
+    margin-top: var(--size-4-2); padding-left: calc(var(--size-4-2) + 4px);
+}
+.annotation-note-preview {
+    font-size: var(--font-ui-smaller); color: var(--text-normal);
+    max-height: 9em; overflow: hidden;
+    user-select: text;
+}
+.annotation-open-btn {
+	flex-shrink: 0;
+	color: var(--text-faint);
+	padding: var(--size-2-1);
+	border-radius: var(--radius-s);
+}
+.annotation-open-btn:hover {
+	color: var(--text-accent);
+	background-color: var(--background-modifier-hover);
 }
 
 /* --- Selection Popup --- */

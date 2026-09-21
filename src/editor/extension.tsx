@@ -1,23 +1,15 @@
-import { EditorState, StateField, type Extension, StateEffect, type Range, Facet } from "@codemirror/state";
+import { EditorState, StateField, type Extension, StateEffect, type Range, Facet, Prec } from "@codemirror/state";
 import { EditorView, Decoration, type DecorationSet, WidgetType, ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import { createRoot, type Root } from "react-dom/client";
 import { useState, useLayoutEffect, type CSSProperties, useRef, useEffect } from 'react';
 import CommentPopover from "./popover";
 import { editorLivePreviewField, Notice } from "obsidian";
 import { matchColor } from "@/lib/utils";
 import Draggable from 'react-draggable';
 
-// --- GLOBAL POPOVER SETUP ---
-const unifiedPopoverContainerEl = createDiv();
-unifiedPopoverContainerEl.setAttribute("popover", "auto");
-unifiedPopoverContainerEl.id = "perink-unified-popover-container";
-activeDocument.body.appendChild(unifiedPopoverContainerEl);
-const unifiedPopoverRoot: Root = createRoot(unifiedPopoverContainerEl);
-
-export function cleanup() {
-	unifiedPopoverRoot.unmount();
-	unifiedPopoverContainerEl.remove();
-}
+import { unifiedPopoverContainerEl, unifiedPopoverRoot } from "./popover-root";
+import { NoteWidget, noteStoreFacet } from "./notes";
+import { NOTE_MARKER_REGEX, type NoteStore } from "@/notes";
+export { cleanup } from "./popover-root";
 
 // --- REACT COMPONENT: ColorPalette ---
 interface ColorPaletteProps {
@@ -168,6 +160,35 @@ function CombinedPopover({ anchorEl, type, initialComment, textToCopy, onSave, o
 const ShowPopoverEffect = StateEffect.define<{ from: number; to: number; type: 'highlight' | 'strikethrough' }>();
 // Define a new effect to trigger an existing popover
 export const TriggerPopoverEffect = StateEffect.define<{ from: number, to: number }>();
+// Outlines an annotation that was clicked in the sidebar, null clears the outline
+export const FocusFlashEffect = StateEffect.define<{ from: number, to: number } | null>();
+
+
+// --- FOCUS FLASH (for clicks in the annotations sidebar) ---
+// The outline is a decoration instead of a hand positioned overlay, so CodeMirror places
+// it. Measuring the coordinates ourselves meant reading them before CodeMirror had
+// finished scrolling and re-measuring line heights, which is what left the box floating
+// above or below the annotation.
+const focusFlashMark = Decoration.mark({ class: "perink-focus-flash", inclusive: true });
+
+export const focusFlashField = StateField.define<DecorationSet>({
+	create() {
+		return Decoration.none;
+	},
+	update(flash, tr) {
+		// An edit can leave the marked range empty or meaningless, so just drop the outline.
+		if (tr.docChanged) flash = Decoration.none;
+
+		for (const effect of tr.effects) {
+			if (!effect.is(FocusFlashEffect)) continue;
+			flash = effect.value && effect.value.to > effect.value.from
+				? Decoration.set([focusFlashMark.range(effect.value.from, effect.value.to)])
+				: Decoration.none;
+		}
+		return flash;
+	},
+	provide: (f) => EditorView.decorations.from(f),
+});
 
 
 // --- UNIFIED ANNOTATION WIDGET ---
@@ -312,12 +333,15 @@ const colorOptionsFacet = Facet.define<string[], string[]>({
 // --- DECORATION LOGIC ---
 function createDecorations(state: EditorState, colorOptions: string[]): DecorationSet {
 	const decorations: Range<Decoration>[] = [];
+	const text = state.doc.toString();
+	const annotationRanges: { from: number, to: number }[] = [];
 	
 	const processMatches = (regex: RegExp, type: 'highlight' | 'strikethrough') => {
-		for (const match of state.doc.toString().matchAll(regex)) {
+		for (const match of text.matchAll(regex)) {
 			if (match.index === undefined) continue;
 			const from = match.index;
 			const to = from + match[0].length;
+			annotationRanges.push({ from, to });
 			const text = match[1];
 			const comment = match[2] || "";
 			const matchedColor = matchColor(comment);
@@ -335,7 +359,7 @@ function createDecorations(state: EditorState, colorOptions: string[]): Decorati
 	// --- Find and decorate quad blocks first to make them atomic ---
 	// This regex finds quad blocks that are used for indentation at the start of a line.
 	const quadRegex = /(^\s*)(\$\s*(?:\\quad\s*)+\$\s*)/gm;
-	for (const match of state.doc.toString().matchAll(quadRegex)) {
+	for (const match of text.matchAll(quadRegex)) {
 		if (match.index === undefined) continue;
 		const from = match.index + match[1].length;
 		const to = from + match[2].length;
@@ -346,8 +370,21 @@ function createDecorations(state: EditorState, colorOptions: string[]): Decorati
 		);
 	}
 	
-	processMatches(/==(.*?)==(?:<!--(.*?)-->)?/gs, 'highlight');
-	processMatches(/~~(.*?)~~(?:<!--(.*?)-->)?/gs, 'strikethrough');
+	// A comment never starts with "note:", which is how a note placed right after a highlight
+	// stays a note instead of being read as that highlight's comment.
+	processMatches(/==(.*?)==(?:<!--(?!note:)(.*?)-->)?/gs, 'highlight');
+	processMatches(/~~(.*?)~~(?:<!--(?!note:)(.*?)-->)?/gs, 'strikethrough');
+
+	// --- Notes: a pin in place of each marker ---
+	for (const match of text.matchAll(NOTE_MARKER_REGEX)) {
+		if (match.index === undefined) continue;
+		const from = match.index;
+		const to = from + match[0].length;
+		// A marker inside an annotation is already hidden by that annotation's widget, and
+		// two replacing decorations must not overlap.
+		if (annotationRanges.some(range => from < range.to && to > range.from)) continue;
+		decorations.push(Decoration.replace({ widget: new NoteWidget(match[1]) }).range(from, to));
+	}
 
 	return Decoration.set(decorations, true);
 }
@@ -371,7 +408,7 @@ export const decorationStateField = StateField.define<DecorationSet>({
 	provide: (f) => EditorView.decorations.from(f),
 });
 
-export function highlightExtension(colorOptions: string[]): Extension {
+export function highlightExtension(colorOptions: string[], notes: NoteStore): Extension {
 	const popoverPlugin = ViewPlugin.fromClass(class {
 		update(update: ViewUpdate) {
 			const findAndShow = (from: number, to: number, type?: 'highlight' | 'strikethrough') => {
@@ -406,9 +443,17 @@ export function highlightExtension(colorOptions: string[]): Extension {
 	});
 
 	return [
-		decorationStateField,
+		// Obsidian parses ==highlights== and ~~strikethroughs~~ itself and hides their opening
+		// marker with a decoration of its own, which starts exactly where the widget covering the
+		// whole annotation starts. With Obsidian's winning that overlap, a full draw still shows
+		// both, but when an edit shifts an annotation and only that part is redrawn, the widget
+		// is dropped and the annotation vanishes until the window is reloaded. Taking precedence
+		// makes the widget own the whole range, so Obsidian's decoration inside it is skipped.
+		Prec.highest(decorationStateField),
+		focusFlashField,
 		popoverPlugin,
-		colorOptionsFacet.of(colorOptions)
+		colorOptionsFacet.of(colorOptions),
+		noteStoreFacet.of(notes)
 	];
 }
 

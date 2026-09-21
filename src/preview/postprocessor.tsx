@@ -47,14 +47,14 @@ export default (element: HTMLElement, context: MarkdownPostProcessorContext) => 
 	processAnnotationType(element, context, {
 		tag: 'mark',
 		className: 'perink-highlight',
-		regex: /==(.*?)==<!--(.*?)-->/g,
+		regex: /==(.*?)==<!--(?!note:)(.*?)-->/g,
 		allowsColor: true
 	});
 
 	processAnnotationType(element, context, {
 		tag: 'del',
 		className: 'perink-strikethrough',
-		regex: /~~(.*?)~~<!--(.*?)-->/g,
+		regex: /~~(.*?)~~<!--(?!note:)(.*?)-->/g,
 		allowsColor: false
 	});
 };
